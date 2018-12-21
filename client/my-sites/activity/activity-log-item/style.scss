@@ -63,7 +63,7 @@
 
 .activity-log-item__type {
 	align-self: flex-start;
-	background: $gray-light;
+	background: var( --color-neutral-0 );
 	text-align: center;
 	margin: 1px 22px 0 10px;
 	padding: 4px 0 6px;
@@ -429,7 +429,7 @@
 	justify-content: space-between;
 	padding: 16px 0 0;
 	margin: 0;
-	border-top: 1px solid $gray-light;
+	border-top: 1px solid var( --color-neutral-0 );
 
 	p {
 		margin-bottom: 0;
