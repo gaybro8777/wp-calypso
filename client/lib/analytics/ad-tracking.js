@@ -186,7 +186,7 @@ if ( typeof window !== 'undefined' ) {
 export function mybeRefreshCountryCodeCookieGdpr( force ) {
 	const cookieMaxAgeSeconds = 6 * 60 * 60;
 
-	const cookies = cookie.parse( document.cookie );
+	const cookies = cookie.parse( window.document.cookie );
 
 	if ( force || ! cookies.country_code || 'unknown ' === cookies.country_code ) {
 		// cache buster
@@ -194,13 +194,13 @@ export function mybeRefreshCountryCodeCookieGdpr( force ) {
 		request
 			.get( 'https://public-api.wordpress.com/geo/?v=' + v )
 			.then( res => {
-				document.cookie = cookie.serialize( 'country_code', res.body.country_short, {
+				window.document.cookie = cookie.serialize( 'country_code', res.body.country_short, {
 					path: '/',
 					maxAge: cookieMaxAgeSeconds,
 				} );
 			} )
 			.catch( err => {
-				document.cookie = cookie.serialize( 'country_code', 'unknown', {
+				window.document.cookie = cookie.serialize( 'country_code', 'unknown', {
 					path: '/',
 					maxAge: cookieMaxAgeSeconds,
 				} );
@@ -1457,7 +1457,8 @@ function recordParamsInFloodlight( params ) {
 	iframe.setAttribute( 'height', '1' );
 	iframe.setAttribute( 'frameborder', '0' );
 	iframe.setAttribute( 'style', 'display: none' );
-	document.body.appendChild( iframe );
+
+	document.body.appendChild( iframe ); // test
 }
 
 /**
