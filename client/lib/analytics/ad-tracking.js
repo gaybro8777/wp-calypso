@@ -5,7 +5,7 @@
  */
 import cookie from 'cookie';
 import debugFactory from 'debug';
-import { assign, clone, cloneDeep, get, some, includes, noop } from 'lodash';
+import { assign, clone, cloneDeep, some, includes, noop } from 'lodash';
 import { v4 as uuid } from 'uuid';
 
 /**
@@ -17,6 +17,7 @@ import userModule from 'lib/user';
 import { loadScript as loadScriptCallback } from 'lib/load-script';
 import { shouldSkipAds, hashPii } from 'lib/analytics/utils';
 import { promisify } from '../../utils';
+import request from 'superagent';
 
 /**
  * Module variables
@@ -127,6 +128,11 @@ const FACEBOOK_TRACKING_SCRIPT_URL = 'https://connect.facebook.net/en_US/fbevent
 	};
 
 /**
+ * Request user country code as soon as possible.
+ */
+mybeRefreshCountryCodeCookieGdpr( true );
+
+/**
  * Globals
  */
 
@@ -169,6 +175,37 @@ if ( typeof window !== 'undefined' ) {
 	// Outbrain
 	if ( isOutbrainEnabled ) {
 		setupOutbrainGlobal();
+	}
+}
+
+/**
+ * Refreshes the GDPR `country_code` cookie every 6 hours (like A8C_Analytics wpcom plugin).
+ *
+ * @param {Boolean} force - If set to true forces cookie refresh
+ */
+export function mybeRefreshCountryCodeCookieGdpr( force ) {
+	const cookieMaxAgeSeconds = 6 * 60 * 60;
+
+	const cookies = cookie.parse( document.cookie );
+
+	if ( force || ! cookies.country_code || 'unknown ' === cookies.country_code ) {
+		// cache buster
+		const v = new Date().getTime();
+		request
+			.get( 'https://public-api.wordpress.com/geo/?v=' + v )
+			.then( res => {
+				document.cookie = cookie.serialize( 'country_code', res.body.country_short, {
+					path: '/',
+					maxAge: cookieMaxAgeSeconds,
+				} );
+			} )
+			.catch( err => {
+				document.cookie = cookie.serialize( 'country_code', 'unknown', {
+					path: '/',
+					maxAge: cookieMaxAgeSeconds,
+				} );
+				debug( 'refreshGeoIpCountryCookieGdpr Error: ', err );
+			} );
 	}
 }
 
@@ -555,12 +592,13 @@ export function mayWeTrackCurrentUserGdpr() {
  * @return {Boolean}        Whether the current user could be in the GDPR zone
  */
 export function isCurrentUserMaybeInGdprZone() {
-	const currentUser = user.get();
-	const countryCode = get( currentUser, 'user_ip_country_code' );
-	// if we don't have the country code they could be in the GDPR zone, so, yes
-	if ( ! countryCode ) {
+	const cookies = cookie.parse( document.cookie );
+	const countryCode = cookies.country_code;
+
+	if ( ! countryCode || 'unknown' === countryCode ) {
 		return true;
 	}
+
 	const gdprCountries = [
 		// European Member countries
 		'AT', // Austria
