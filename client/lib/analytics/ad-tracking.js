@@ -130,7 +130,7 @@ const FACEBOOK_TRACKING_SCRIPT_URL = 'https://connect.facebook.net/en_US/fbevent
 /**
  * Request user country code as soon as possible.
  */
-mybeRefreshCountryCodeCookieGdpr( true );
+maybeRefreshCountryCodeCookieGdpr( true );
 
 /**
  * Globals
@@ -183,10 +183,10 @@ if ( typeof window !== 'undefined' ) {
  *
  * @param {Boolean} force - If set to true forces cookie refresh
  */
-export function mybeRefreshCountryCodeCookieGdpr( force ) {
+export function maybeRefreshCountryCodeCookieGdpr( force ) {
 	const cookieMaxAgeSeconds = 6 * 60 * 60;
 
-	const cookies = cookie.parse( window.document.cookie );
+	const cookies = cookie.parse( document.cookie );
 
 	if ( force || ! cookies.country_code || 'unknown ' === cookies.country_code ) {
 		// cache buster
@@ -194,13 +194,13 @@ export function mybeRefreshCountryCodeCookieGdpr( force ) {
 		request
 			.get( 'https://public-api.wordpress.com/geo/?v=' + v )
 			.then( res => {
-				window.document.cookie = cookie.serialize( 'country_code', res.body.country_short, {
+				document.cookie = cookie.serialize( 'country_code', res.body.country_short, {
 					path: '/',
 					maxAge: cookieMaxAgeSeconds,
 				} );
 			} )
 			.catch( err => {
-				window.document.cookie = cookie.serialize( 'country_code', 'unknown', {
+				document.cookie = cookie.serialize( 'country_code', 'unknown', {
 					path: '/',
 					maxAge: cookieMaxAgeSeconds,
 				} );
@@ -1457,8 +1457,7 @@ function recordParamsInFloodlight( params ) {
 	iframe.setAttribute( 'height', '1' );
 	iframe.setAttribute( 'frameborder', '0' );
 	iframe.setAttribute( 'style', 'display: none' );
-
-	document.body.appendChild( iframe ); // test
+	document.body.appendChild( iframe );
 }
 
 /**

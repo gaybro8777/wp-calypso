@@ -32,7 +32,7 @@ import {
 	retarget,
 	recordAliasInFloodlight,
 	recordPageViewInFloodlight,
-	mybeRefreshCountryCodeCookieGdpr,
+	maybeRefreshCountryCodeCookieGdpr,
 } from 'lib/analytics/ad-tracking';
 import { statsdTimingUrl } from 'lib/analytics/statsd';
 
@@ -398,7 +398,7 @@ const analytics = {
 			analytics.tracks.recordEvent( 'calypso_page_view', eventProperties );
 
 			// Maybe update country_code cookie used by trackers
-			mybeRefreshCountryCodeCookieGdpr( false );
+			maybeRefreshCountryCodeCookieGdpr( false );
 
 			// Fire retargeting trackers
 			retarget();
